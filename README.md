@@ -1,6 +1,6 @@
 # 2026-refs
 
-NRK P1 · Godt selskap — jinglereferanser (statisk nettside med Spotify-embed og Excel-lignende autofilter).
+2026 jinglereferanser (statisk nettside med Spotify-embed og Excel-lignende autofilter).
 
 **GitHub Pages:** https://andreassorby.github.io/2026-refs/
 
