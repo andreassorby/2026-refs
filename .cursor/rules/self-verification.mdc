@@ -1,0 +1,38 @@
+---
+description: Offer (or, without a user present, run) a self-verification round after larger pieces of work, and report honestly what was verified.
+alwaysApply: true
+---
+
+# Self-verification after larger work
+
+## When
+
+**Larger work** = any of: changes across several files, a new feature or screen, a refactor, a database/schema/migration change, auth/payment/data-deletion logic, dependency or build-config changes.
+**Small work** (a typo, one style tweak, a one-line fix, docs only): don't ask; just run the project's normal quick checks if any.
+
+## What to do
+
+1. When a larger piece of work is complete, and **before** any push / version-bump / deploy step the project's workflow rules ask for (a local checkpoint commit per `commit-after-work.mdc` is fine first; commit verification fixes separately), ask the user **once, in one short line**:
+   > "Want me to do a self-verification round (tests, build, click through the app) before I finish?"
+   Don't ask again in the same task if they said no.
+2. **Cloud / background agents, or any run with no user to answer:** don't ask; just run the round and put the report in your final message / PR description.
+3. If yes (or no user present), run the round:
+   - **Static:** the project's tests, lint, typecheck and build (`npm run test`, `npm run lint`, `tsc --noEmit` / `npm run typecheck`, `npm run build`, or whatever the README / package.json defines). Only relevant workspaces if it's a monorepo.
+   - **Migrations:** apply to a local/dev database only (never production without explicit permission) and check that the app still reads/writes the affected data.
+   - **Run it:** for a web app, start the dev server and open it in a browser (browser tool / Playwright). Walk through the 2–5 most important user flows touched by the change, including one error path. Check the browser console for errors.
+   - **Accessibility spot-check** on changed screens: keyboard-only pass (Tab/Enter/Esc, visible focus), labels/names, a quick axe run if available. Full list: `docs/standards/ACCESSIBILITY.md` (topic `accessibility`).
+   - **Mobile width:** look at the changed screens at ~375 px.
+4. Fix what you can and re-run the failing check. Don't loop forever: after two failed attempts on the same problem, stop and report it.
+
+## Report (always this shape)
+
+```
+Self-verification
+✅ Passed: <check> – <one-line evidence, e.g. "42 tests passed", "build OK">
+❌ Failed: <check> – <what failed, what you did about it>
+⚠️ Not checked: <check> – <why, e.g. "no browser available", "needs real iPhone", "needs screen reader">
+```
+
+## Honesty rule
+
+**Never say something was verified, tested, or works unless you actually ran it in this session and saw the result.** "Should work" is not "verified". If a command could not run (missing env vars, no database, no browser), list it under "Not checked". Don't present skipped or partial checks as passes.

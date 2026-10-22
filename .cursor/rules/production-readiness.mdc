@@ -1,0 +1,31 @@
+---
+description: Production readiness review. Use when preparing a launch, release or deploy to real users (first public launch, inviting real users, going from test to production, adding payments/personal data), or when the user asks for a readiness review / "is this ready for production?".
+alwaysApply: false
+---
+
+# Production readiness review
+
+When this applies, walk through **every item** in `docs/standards/PRODUCTION-READINESS.md` (8 areas: security, privacy, backup, monitoring, error handling, performance, accessibility, legal) for this project.
+
+## How
+
+1. Gather evidence yourself where you can: read code and config (`next.config.*`, middleware, `supabase/migrations/`, env usage), run `npm audit`, `npm run build`, grep the client bundle for secrets, check RLS in migrations or via SQL (read-only), run Lighthouse/axe if a browser is available.
+2. Never change production settings, data, or billing during a review. Propose fixes; make code changes only if the user asks.
+3. Mark each item **✅ pass**, **❌ fail**, or **❓ unknown** (can't see it from here, e.g. dashboard settings, plan, contracts). Unknown is not pass; say who/what can confirm it.
+4. Don't duplicate the accessibility checklist: for that area, run the definition of done in `docs/standards/ACCESSIBILITY.md` (if installed) and summarize.
+5. Legal items: state facts and point to sources; add "not legal advice".
+
+## Report
+
+```
+Production readiness – <project> – <date>
+Summary: X pass · Y fail · Z unknown. Blockers: <list>
+## 1. Security
+✅ RLS enabled on all 14 public tables (migrations checked)
+❌ No rate limiting on /api/login – fix: …
+❓ Supabase auth email rate limits – check Dashboard → Auth → Rate Limits
+…
+Top 5 fixes before launch (ordered by risk): …
+```
+
+Never mark something ✅ that you did not actually check.

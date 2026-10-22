@@ -1,0 +1,46 @@
+---
+description: Accessibility (WCAG 2.2 AA) rules for all UI work. Definition of done for any UI change.
+globs: ["**/*.tsx", "**/*.jsx", "**/*.ts", "**/*.js", "**/*.html", "**/*.css", "**/*.vue", "**/*.svelte"]
+alwaysApply: true
+---
+
+# Accessibility (WCAG 2.2 AA)
+
+Every UI you build or change must meet **WCAG 2.2 level AA**. This is the target even where the law only asks for less (see `docs/standards/ACCESSIBILITY.md` for the legal context and full checklist, and `docs/standards/ALT-TEXT.md` for alt text).
+If a project rule in `.cursor/rules/` is stricter (for example 44 px touch targets or no-hover rules), the stricter rule wins.
+
+## Build rules
+
+1. **Semantic HTML first.** `<button>` for actions, `<a href>` for navigation, `<label>`, `<nav>`, `<main>`, `<header>`, `<footer>`, `<ul>/<li>`, `<table>` for tabular data. Never `<div onClick>` / `<span onClick>`.
+2. **ARIA only when HTML cannot do it.** No `role="button"` on a div when a `<button>` works. Every ARIA widget must implement its full keyboard pattern (WAI-ARIA APG). Never `aria-hidden="true"` on a focusable element.
+3. **Keyboard.** Everything works with Tab / Shift+Tab / Enter / Space / Esc / arrow keys where expected. Logical tab order (no positive `tabIndex`). No keyboard traps except an open modal.
+4. **Visible focus.** Never `outline: none` / `outline-none` without a replacement `focus-visible:` ring with at least 3:1 contrast. Focused elements must not be hidden behind sticky headers, toolbars or cookie bars (2.4.11).
+5. **Names and labels.** Every form control has a visible `<label htmlFor>` (placeholder is not a label). Icon-only buttons/links get `aria-label` (or visually hidden text). Visible text must be part of the accessible name (2.5.3).
+6. **Images.** Informative images: meaningful `alt`. Decorative: `alt=""`. Icon SVGs: `aria-hidden="true"` when a text label exists. Follow `docs/standards/ALT-TEXT.md`.
+7. **Contrast.** Text ≥ 4.5:1; large text (≥ 24 px, or ≥ 18.66 px bold) ≥ 3:1; UI component borders, focus rings, icons and chart lines ≥ 3:1. Check both light and dark theme.
+8. **Colour is never the only signal.** Add text, icon or pattern (errors, status, selected state, required fields).
+9. **No hover-only interactions.** Anything revealed on hover must also be visible/reachable by keyboard focus and touch. Hover/focus popups must be dismissable (Esc), hoverable and persistent (1.4.13).
+10. **Target size ≥ 24×24 CSS px** (or enough spacing) for every pointer target (2.5.8).
+11. **Dragging has an alternative.** Every drag-and-drop (e.g. reorder) also works with single clicks/taps or buttons (Move up/down) and keyboard (2.5.7).
+12. **Motion.** Respect `prefers-reduced-motion` (Tailwind `motion-safe:` / `motion-reduce:`, framer-motion `useReducedMotion`). Nothing flashes > 3 times/s. Auto-moving content > 5 s needs pause/stop.
+13. **Language.** `<html lang="…">` matches the UI language (e.g. `nb` for Norwegian, `en` for English) and updates when the user switches language. Mark inline other-language passages with `lang`.
+14. **Structure.** One `<h1>` per page/view, headings in order (no skipping levels for styling). Unique, descriptive `<title>` per page. Landmarks present. A "Skip to main content" link on pages with repeated navigation.
+15. **Forms and errors.** Errors in text, next to the field, linked with `aria-describedby`, `aria-invalid="true"` on the field, focus moved to the first error or an error summary. Status messages (saved, loading done, search results) announced via `role="status"` / `aria-live="polite"`; urgent errors via `role="alert"`. Use `autoComplete` on personal data fields. Don't ask for the same info twice in one flow (3.3.7).
+16. **Authentication.** No cognitive tests (no "type these characters" without alternatives). Allow paste and password managers in login fields; magic links / passkeys are fine (3.3.8).
+17. **Consistent help.** If help/contact links exist, keep them in the same place on every page (3.2.6).
+18. **Modals/dialogs.** Prefer native `<dialog>` with `showModal()`. Otherwise `role="dialog"` + `aria-modal="true"` + `aria-labelledby`. Move focus into the dialog on open, trap Tab inside, close on Esc, and **restore focus to the trigger** on close. Background is inert.
+19. **Reflow and zoom.** Works at 320 CSS px width and 200 % text zoom without horizontal scrolling (except tables/canvases). Don't block pinch-zoom (`user-scalable=no` / `maximum-scale=1` are forbidden).
+20. **Media.** Captions for video with speech; transcript for audio-only. No autoplay with sound.
+
+## Definition of done (run before saying a UI task is finished)
+
+- [ ] Keyboard-only walkthrough of the changed UI: reach, operate, and leave every control; focus always visible and never hidden.
+- [ ] Every control has an accessible name; every form field a label; every image a correct `alt`.
+- [ ] Contrast checked (text 4.5:1, large text / UI 3:1) in all themes.
+- [ ] No hover-only, no drag-only, targets ≥ 24×24 px.
+- [ ] Headings in order, `lang` correct, page `<title>` set.
+- [ ] Errors and status messages are announced (aria-live / role=alert) and not colour-only.
+- [ ] Modals: focus in, trapped, Esc closes, focus restored.
+- [ ] `prefers-reduced-motion` respected; layout works at 320 px and 200 % zoom.
+- [ ] Lint passes with `eslint-plugin-jsx-a11y` (recommended rules) and the axe check (`@axe-core/playwright` or `axe-core` in tests) reports 0 violations for the changed pages, if the project has them. If not set up, say so and propose adding them.
+- [ ] Say in your final message which checks you ran and which need a human (screen reader: VoiceOver on Mac/iOS, NVDA on Windows, TalkBack on Android).
