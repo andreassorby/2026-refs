@@ -1,0 +1,51 @@
+---
+description: Commit after each completed job or substantial piece of work so the user can roll back step by step. Never rewrite history.
+alwaysApply: true
+---
+
+# Commit after work (rollback points)
+
+Every finished step should be a commit the user can go back to.
+
+## Project rules come first
+
+If the repo already has a commit/release/publish rule (e.g. `agentic-workflow.mdc`, `iteration-closeout.mdc`, `deploy-to-github.mdc`, `release-workflow.mdc`, or publish steps in `AGENTS.md`), **that rule decides message format, versioning, changelog and pushing.** This rule only adds two baselines on top: (1) be up to date before committing, (2) always commit after a job.
+
+## When to commit
+
+1. **After completing a job or a substantial piece of work** (feature slice, bug fix, refactor, schema change, config change) — once it is in a coherent state.
+2. **Before starting a large new change when the working tree is dirty:** first commit (or ask about) the existing changes as a checkpoint, so the new work starts from a clean point. If the dirty changes aren't yours and you're unsure what they are, ask before committing them.
+3. Several **small, logical commits** are fine and preferred over one huge commit. Don't commit half-broken intermediate states unless the message says so (`wip:`).
+
+## Be on the latest version first
+
+Before committing (and ideally before starting a large change):
+
+1. `git fetch` (if there is a remote). Then check `git status -sb` / `git rev-list --left-right --count @{u}...HEAD` to see if the branch is behind its upstream.
+2. **If behind (incoming changes):** integrate them before committing/pushing.
+   - Uncommitted work in the way: `git stash push -u -m "agent: before sync"`, integrate, then `git stash pop` and check it applied cleanly.
+   - Local commits not yet pushed: prefer `git pull --rebase` (rewrites only *your unpushed* commits). If the project prefers merges, use `git pull --no-rebase`.
+   - After integrating, re-run the quick checks (tests/lint/typecheck as the project defines) before committing.
+3. **Conflicts:** resolve only when you are confident what both sides intended. Otherwise stop (`git rebase --abort` / `git merge --abort` restores the previous state), explain the conflicting files, and ask the user.
+4. **Never** force-push, and never discard local or remote work (`reset --hard`, `checkout -- .`, `stash drop`, deleting branches) to "fix" a divergence.
+5. **No remote / no upstream / no network:** say so, and commit locally anyway.
+
+## How
+
+- Check first: `git status`, `git diff` (and `git diff --staged`). Stage only files that belong to the work; never blindly commit unrelated files.
+- **Clear, descriptive message:** imperative summary ≤ 72 chars saying *what and why*, e.g. `Add keyboard reorder buttons to setlist editor`. Add a body for anything non-obvious. Follow the project's message format if it has one (e.g. `v0.0123: …`).
+- **Never commit secrets:** `.env*`, keys, tokens, credentials, service-role keys, private certificates. If such a file is staged or untracked-but-needed, stop and tell the user (and suggest `.gitignore`).
+- **Never** `git push --force`, `git reset --hard`, `git rebase` / `commit --amend` on pushed commits, or `--no-verify`. Don't delete branches or rewrite history unless the user explicitly asks for that exact action.
+- **If the commit fails** (pre-commit hook, lint, merge conflict, no git repo, missing identity): don't bypass it. Report the exact error and either fix the cause and commit again, or leave the changes uncommitted and say so.
+
+## Pushing
+
+This rule requires only the **commit**. Pushing follows the project's own rules (some projects push after every iteration, some have an opt-in auto-push hook, some only push on request). If the project says nothing, don't push without asking. Before any push, do the up-to-date check above again.
+
+## Cloud agents
+
+Cloud/background agents already commit to their own branch; follow the same message and secrets rules there. This rule mainly governs local Cursor sessions.
+
+## In your final message
+
+Say what you committed (`<short sha> <message>`), or why nothing was committed.
